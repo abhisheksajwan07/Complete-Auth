@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
+import { sendVerificationEmail } from "../utils/sendingMails.utils.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -43,29 +44,20 @@ const registerUser = async (req, res) => {
     await user.save();
 
     // Send verification email
-    const transporter = nodemailer.createTransport({
-      host: process.env.MAILTRAP_HOST,
-      port: process.env.MAILTRAP_PORT,
-      secure: false,
-      auth: {
-        user: process.env.MAILTRAP_USERNAME,
-        pass: process.env.MAILTRAP_PASSWORD,
-      },
-    });
 
-    const mailOptions = {
-      from: process.env.MAILTRAP_SENDEREMAIL,
-      to: user.email,
-      subject: "Verify your email",
-      text: `Please click on the following link to verify your email:
-      ${process.env.BASE_URL}/api/v1/users/verify/${token}
-      `,
-    };
+    const emailSent = await sendVerificationEmail(user.email, token);
+  
+    
 
-    await transporter.sendMail(mailOptions);
+    if (!emailSent) {
+      return res.status(500).json({
+        message: "Failed to send verification email",
+        success: false,
+      });
+    }
 
     res.status(201).json({
-      message: "User registered successfully",
+      message: "User registered successfully. Check your email for verification.",
       success: true,
     });
   } catch (error) {

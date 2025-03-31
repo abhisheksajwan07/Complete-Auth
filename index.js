@@ -1,7 +1,8 @@
 import express, { urlencoded } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import db from "./utils/db.utils.js"
+import db from "./utils/db.utils.js";
+import userRoutes from "./routes/user.routes.js";
 
 dotenv.config();
 const app = express();
@@ -19,6 +20,7 @@ app.get("/", (req, res) => {
   res.send("hello world");
 });
 db();
+app.use("/api/v1/users", userRoutes);
 app.listen(port, () => {
   console.log(`app listening on ${port}`);
 });
